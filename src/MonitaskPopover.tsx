@@ -5,6 +5,8 @@ import {
   Clock,
   Eye,
   EyeOff,
+  History,
+  LayoutGrid,
   MoreVertical,
   Pause,
   Play,
@@ -12,7 +14,9 @@ import {
   RotateCcw,
   Settings,
   Square,
+  FileText,
   X,
+  ChevronRight,
 } from 'lucide-react'
 
 type TabId = 'tracker' | 'week' | 'manual' | 'settings'
@@ -33,11 +37,11 @@ type AppUsage = {
   color: string
 }
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'tracker', label: 'Tracker' },
-  { id: 'week', label: 'Week' },
-  { id: 'manual', label: 'Manual' },
-  { id: 'settings', label: 'Settings' },
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: 'tracker', label: 'Track', icon: <LayoutGrid className="h-5 w-5" /> },
+  { id: 'week', label: 'History', icon: <History className="h-5 w-5" /> },
+  { id: 'manual', label: 'Logs', icon: <FileText className="h-5 w-5" /> },
+  { id: 'settings', label: 'Config', icon: <Settings className="h-5 w-5" /> },
 ]
 
 const WEEK_DAYS = [
@@ -55,14 +59,13 @@ const TASKS = ['General', 'Design review', 'Documentation', 'Bug fixes']
 
 const APPS_WEBSITES: AppUsage[] = [
   { name: 'Figma', duration: '2h 43m', minutes: 163, color: '#F472B6' },
-  { name: 'Code', duration: '1h 24m', minutes: 84, color: '#A78BFA' },
+  { name: 'Code', duration: '1h 24m', minutes: 84, color: '#8B5CF6' },
   { name: 'Notion', duration: '55m', minutes: 55, color: '#FB7185' },
   { name: 'Zoom', duration: '41m', minutes: 41, color: '#34D399' },
   { name: 'Discord', duration: '38m', minutes: 38, color: '#2DD4BF' },
   { name: 'x.com', duration: '12m', minutes: 12, color: '#F9A8D4' },
 ]
 
-/** Hourly activity 1am → 10pm (mock heights 0–1) */
 const ACTIVITY_BARS = [0.05, 0.08, 0.12, 0.35, 0.92, 0.88, 0.75, 0.4]
 const ACTIVITY_LABELS = ['1am', '4am', '7am', '10am', '1pm', '4pm', '7pm', '10pm']
 
@@ -114,14 +117,14 @@ function Toggle({
       aria-label={label}
       onClick={() => onChange(!on)}
       className={cn(
-        'relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200',
-        on ? 'bg-[#ff6b2c]' : 'bg-[#3A3A3E]',
+        'relative h-[24px] w-[42px] shrink-0 rounded-full transition-colors duration-200',
+        on ? 'bg-[#8B5CF6]' : 'bg-[#1E293B]',
       )}
     >
       <span
         className={cn(
-          'absolute top-[3px] h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
-          on ? 'translate-x-[22px]' : 'translate-x-[3px]',
+          'absolute top-[2px] h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+          on ? 'translate-x-[20px]' : 'translate-x-[2px]',
         )}
       />
     </button>
@@ -146,25 +149,25 @@ function Stepper({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium tracking-wide text-[#71717a] uppercase">
+    <div className="flex flex-col gap-1">
+      <span className="text-[10px] font-bold tracking-wider text-[#94A3B8] uppercase">
         {label}
       </span>
-      <div className="flex items-center gap-1 rounded-xl border border-[#27272a] bg-[#0c0c0e] p-1">
+      <div className="flex items-center gap-1 rounded-xl bg-[#0F172A] p-1 ring-1 ring-[#1E293B]">
         <button
           type="button"
           onClick={() => bump(-1)}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] transition hover:bg-[#27272a] hover:text-white"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-[#94A3B8] transition hover:bg-[#1E293B] hover:text-white"
         >
           −
         </button>
-        <span className="min-w-[52px] flex-1 text-center font-mono text-[15px] tabular-nums text-white">
+        <span className="min-w-[48px] flex-1 text-center font-mono text-[14px] tabular-nums text-white">
           {value}
         </span>
         <button
           type="button"
           onClick={() => bump(1)}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] transition hover:bg-[#27272a] hover:text-white"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-[#94A3B8] transition hover:bg-[#1E293B] hover:text-white"
         >
           +
         </button>
@@ -188,7 +191,7 @@ export default function MonitaskPopover() {
       time: '0h 13m',
       visible: true,
       active: true,
-      dotColor: '#ff6b2c',
+      dotColor: '#8B5CF6',
     },
     {
       id: '2',
@@ -280,551 +283,251 @@ export default function MonitaskPopover() {
     setSettings((s) => ({ ...s, [key]: value }))
   }
 
-  const card = 'rounded-2xl border border-[#27272a]/80 bg-[#141416]'
+  const surface = 'bg-[#0F172A]'
+  const card = 'rounded-[24px] border border-[#1E293B] bg-[#1E293B]/40 backdrop-blur-md'
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-[#050506] px-4 py-10">
-      <div className="w-[380px] shrink-0">
-        <div className="flex h-[26px] items-center justify-between rounded-t-2xl border border-b-0 border-[#27272a]/80 bg-[#1c1c1e] px-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-[18px] w-[18px] items-center justify-center rounded-md bg-gradient-to-br from-[#ff6b2c] to-[#ea580c] text-[9px] font-bold text-white">
-              M
-            </div>
-            <span className="text-[11px] font-medium text-[#e4e4e7]">Monitask</span>
-          </div>
-          <span className="font-mono text-[11px] tabular-nums text-[#71717a]">
-            {clock}
-          </span>
+    <div className="flex min-h-screen items-start justify-center bg-[#020617] px-4 py-10 font-sans">
+      <div className="relative w-[360px] overflow-hidden rounded-[32px] border border-[#1E293B] bg-[#020617] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)]">
+        
+        {/* Top Control Bar — NEW POSITION */}
+        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[#1E293B]/80 p-1.5 backdrop-blur-xl ring-1 ring-white/10">
+          <button
+            onClick={handlePlay}
+            disabled={isActive}
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full transition-all',
+              isActive 
+                ? 'bg-[#1E293B] text-[#475569]' 
+                : 'bg-[#8B5CF6] text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]'
+            )}
+          >
+            <Play className="h-4 w-4 fill-current" />
+          </button>
+          <button
+            onClick={handlePause}
+            disabled={!running || paused}
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full transition-all',
+              !running || paused
+                ? 'text-[#475569]'
+                : 'bg-[#1E293B] text-white hover:bg-[#334155]'
+            )}
+          >
+            <Pause className="h-4 w-4" />
+          </button>
+          {running && (
+            <button
+              onClick={handleStop}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EF4444] text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+            >
+              <Square className="h-3.5 w-3.5 fill-current" />
+            </button>
+          )}
         </div>
 
-        <div
-          className="overflow-hidden rounded-b-2xl border border-[#27272a]/80 bg-[#0a0a0b] shadow-[0_24px_48px_rgba(0,0,0,0.55)]"
-          style={{ width: 380 }}
-        >
-          <header className="border-b border-[#1f1f22] px-4 pb-3 pt-3.5">
-            <div className="mb-3 flex items-center justify-between">
-              <h1 className="text-[17px] font-semibold tracking-tight text-white">
-                Monitask
-              </h1>
-              <div className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  aria-label="Refresh"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#27272a] hover:text-white"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Notifications"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#27272a] hover:text-white"
-                >
-                  <Bell className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  aria-label="Settings"
-                  onClick={() => setTab('settings')}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#27272a] hover:text-white"
-                >
-                  <Settings className="h-4 w-4" />
-                </button>
-              </div>
+        {/* Dynamic Header */}
+        <header className="flex h-[180px] flex-col items-center justify-end pb-6 pt-12 bg-gradient-to-b from-[#8B5CF6]/20 to-transparent">
+          <div className="text-center">
+            <div className={cn(
+              "font-mono text-[56px] font-extralight tracking-tighter tabular-nums leading-none",
+              isActive ? "text-white" : "text-[#94A3B8]"
+            )}>
+              {formatTimerShort(timerSeconds)}
             </div>
-
-            <div className="flex gap-0.5 rounded-xl bg-[#18181b] p-1">
-              {TABS.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  className={cn(
-                    'flex-1 rounded-[10px] py-1.5 text-[12px] font-medium transition-all',
-                    tab === t.id
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-[#71717a] hover:text-[#d4d4d8]',
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div className="mt-1 flex items-center justify-center gap-2 text-[12px] font-medium text-[#8B5CF6]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] animate-pulse" />
+              {project}
             </div>
-          </header>
+          </div>
+        </header>
 
-          <div className="max-h-[560px] overflow-y-auto px-4 py-4">
+        {/* Content Area */}
+        <main className="max-h-[480px] overflow-y-auto px-5 pb-24">
+          <div className="space-y-6">
+            
             {tab === 'tracker' && (
-              <div key="tracker" className="tab-panel-enter space-y-3">
-                <p className="text-[12px] text-[#71717a]">
-                  Week:{' '}
-                  <span className="font-mono font-medium text-[#e4e4e7]">
-                    00h 48m
-                  </span>
-                </p>
-
-                {/* Timer card — timeMaster style */}
-                <div className={cn(card, 'p-4')}>
+              <div className="tab-panel-enter space-y-6">
+                
+                {/* Tasks — MOVED UP */}
+                <section>
                   <div className="mb-3 flex items-center justify-between">
-                    <div
-                      className={cn(
-                        'font-mono text-[44px] font-light leading-none tabular-nums tracking-tight',
-                        isActive ? 'text-[#ff6b2c]' : 'text-[#ff6b2c]/90',
-                      )}
-                    >
-                      {formatTimerShort(timerSeconds)}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                      aria-label="Reset timer"
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[#27272a] text-[#a1a1aa] transition hover:bg-[#27272a] hover:text-white"
-                    >
-                      <RotateCcw className="h-[18px] w-[18px]" />
-                    </button>
+                    <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#64748B]">Active Tasks</h3>
+                    <button className="text-[11px] font-semibold text-[#8B5CF6]">View All</button>
                   </div>
-
-                  <select
-                    value={project}
-                    onChange={(e) => setProject(e.target.value)}
-                    className="mb-3 w-full cursor-pointer rounded-xl border border-[#27272a] bg-[#0c0c0e] px-3 py-2.5 text-[14px] text-white outline-none focus:border-[#ff6b2c]/40"
-                  >
-                    {PROJECTS.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={2}
-                    placeholder="What are you working on?"
-                    className="mb-3 w-full resize-none rounded-xl border border-[#27272a] bg-[#0c0c0e] px-3 py-2.5 text-[13px] text-white placeholder:text-[#52525b] outline-none focus:border-[#ff6b2c]/40"
-                  />
-
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handlePlay}
-                      disabled={isActive}
-                      className={cn(
-                        'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl text-[13px] font-medium',
-                        isActive
-                          ? 'cursor-default bg-[#27272a] text-[#52525b]'
-                          : 'bg-[#ff6b2c] text-white hover:bg-[#ea580c]',
-                      )}
-                    >
-                      <Play className="h-3.5 w-3.5 fill-current" />
-                      Play
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handlePause}
-                      disabled={!running || paused}
-                      className={cn(
-                        'flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl border text-[13px] font-medium',
-                        !running || paused
-                          ? 'cursor-default border-[#27272a] text-[#52525b]'
-                          : 'border-[#3f3f46] text-white hover:bg-[#27272a]',
-                      )}
-                    >
-                      <Pause className="h-3.5 w-3.5" />
-                      Pause
-                    </button>
-                    {isActive && (
-                      <button
-                        type="button"
-                        onClick={handleStop}
-                        aria-label="Stop"
-                        className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ef4444] text-white"
-                      >
-                        <Square className="h-3.5 w-3.5 fill-current" />
-                      </button>
-                    )}
-                  </div>
-
-                  {activeTask && (
-                    <div className="mt-3 flex items-center justify-between rounded-xl bg-[#0c0c0e] px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: activeTask.dotColor }}
-                        />
-                        <span className="text-[12px] text-[#e4e4e7]">
-                          {activeTask.name}
-                        </span>
-                      </div>
-                      <span className="rounded-md bg-[#ff6b2c]/15 px-2 py-0.5 text-[10px] font-medium text-[#ff8c5a]">
-                        Active
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Session stats */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className={cn(card, 'flex items-center gap-2.5 px-3 py-3')}>
-                    <AlarmClock className="h-5 w-5 shrink-0 text-[#60a5fa]" />
-                    <div>
-                      <p className="text-[11px] text-[#71717a]">Work started</p>
-                      <p className="text-[14px] font-medium text-white">8:55 am</p>
-                    </div>
-                  </div>
-                  <div className={cn(card, 'flex items-center gap-2.5 px-3 py-3')}>
-                    <Clock className="h-5 w-5 shrink-0 text-[#4ade80]" />
-                    <div>
-                      <p className="text-[11px] text-[#71717a]">Total hours</p>
-                      <p className="font-mono text-[14px] font-medium tabular-nums text-white">
-                        {formatTimerLong(5 * 3600 + 14 * 60 + 17)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Activity chart */}
-                <div className={cn(card, 'px-3 py-4')}>
-                  <div className="mb-2 flex h-16 items-end justify-between gap-1">
-                    {ACTIVITY_BARS.map((h, i) => (
-                      <div
-                        key={ACTIVITY_LABELS[i]}
-                        className="flex flex-1 flex-col items-center gap-1"
-                      >
-                        <div
-                          className="w-full max-w-[28px] rounded-sm bg-[#3b82f6]"
-                          style={{
-                            height: `${Math.max(4, h * 56)}px`,
-                            opacity: 0.35 + h * 0.65,
-                          }}
-                        />
+                  <div className="space-y-2">
+                    {tasks.map((task) => (
+                      <div key={task.id} className={cn(
+                        "group flex items-center gap-3 rounded-2xl p-3 transition-all",
+                        task.active ? "bg-[#8B5CF6]/10 ring-1 ring-[#8B5CF6]/30" : "bg-[#1E293B]/40 hover:bg-[#1E293B]/60"
+                      )}>
+                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: task.dotColor }} />
+                        <div className="flex-1 overflow-hidden">
+                          <p className="truncate text-[13px] font-medium text-white">{task.name}</p>
+                          <p className="text-[11px] text-[#64748B]">{task.time} logged</p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button onClick={() => toggleTaskVisibility(task.id)} className="p-1 text-[#64748B] hover:text-white">
+                            {task.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          </button>
+                          <button onClick={() => removeTask(task.id)} className="p-1 text-[#64748B] hover:text-[#EF4444]">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        {task.active && <ChevronRight className="h-4 w-4 text-[#8B5CF6]" />}
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-between text-[9px] text-[#52525b]">
-                    {ACTIVITY_LABELS.map((l) => (
-                      <span key={l}>{l}</span>
-                    ))}
-                  </div>
-                </div>
+                </section>
 
-                {/* Apps & Websites — NEW v2 */}
-                <div className={cn(card, 'p-3')}>
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-[14px] font-semibold text-white">
-                      Apps &amp; Websites
-                    </h2>
-                    <button
-                      type="button"
-                      aria-label="More options"
-                      className="text-[#71717a] hover:text-white"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
+                {/* Stats Grid — REDESIGNED */}
+                <section className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-gradient-to-br from-[#1E293B] to-[#0F172A] p-4 ring-1 ring-white/5">
+                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#3B82F6]/10 text-[#3B82F6]">
+                      <AlarmClock className="h-4 w-4" />
+                    </div>
+                    <p className="text-[11px] text-[#64748B]">Started</p>
+                    <p className="text-[15px] font-semibold text-white">8:55 AM</p>
                   </div>
-                  <ul className="space-y-3">
-                    {APPS_WEBSITES.map((app) => (
-                      <li key={app.name}>
-                        <div className="mb-1 flex items-baseline justify-between gap-2">
-                          <span className="text-[13px] text-[#e4e4e7]">
-                            {app.name}
-                          </span>
-                          <span className="shrink-0 font-mono text-[12px] tabular-nums text-[#a1a1aa]">
-                            {app.duration}
-                          </span>
-                        </div>
-                        <div className="h-1.5 overflow-hidden rounded-full bg-[#27272a]">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${(app.minutes / maxAppMinutes) * 100}%`,
-                              backgroundColor: app.color,
-                            }}
-                          />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  <div className="rounded-2xl bg-gradient-to-br from-[#1E293B] to-[#0F172A] p-4 ring-1 ring-white/5">
+                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#10B981]/10 text-[#10B981]">
+                      <Clock className="h-4 w-4" />
+                    </div>
+                    <p className="text-[11px] text-[#64748B]">Total Today</p>
+                    <p className="text-[15px] font-semibold text-white">5h 14m</p>
+                  </div>
+                </section>
 
-                {/* Notes */}
-                <div>
-                  <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-[#71717a] uppercase">
-                    Notes / Comments
-                  </h3>
-                  <div className="flex gap-2">
+                {/* Notes Input — REDESIGNED */}
+                <section className="rounded-[24px] bg-[#1E293B]/30 p-1 ring-1 ring-white/5">
+                  <div className="flex items-center gap-2 p-1">
                     <input
                       type="text"
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      placeholder="Add a note…"
-                      className="min-w-0 flex-1 rounded-xl border border-[#27272a] bg-[#141416] px-3 py-2 text-[13px] text-white outline-none focus:border-[#ff6b2c]/40"
+                      placeholder="Add a note..."
+                      className="flex-1 bg-transparent px-3 py-2 text-[13px] text-white outline-none placeholder:text-[#475569]"
                     />
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-xl bg-[#ff6b2c] px-4 text-[13px] font-medium text-white hover:bg-[#ea580c]"
-                    >
-                      Add
+                    <button className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8B5CF6] text-white shadow-lg">
+                      <X className="h-4 w-4 rotate-45" />
                     </button>
                   </div>
-                </div>
+                </section>
 
-                {/* Tasks */}
-                <div>
-                  <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-[#71717a] uppercase">
-                    Tasks
-                  </h3>
-                  <ul className="space-y-1.5">
-                    {tasks.map((task) => (
-                      <li
-                        key={task.id}
-                        className={cn(
-                          'flex items-center gap-2 rounded-xl px-3 py-2.5',
-                          task.active
-                            ? 'border border-[#ff6b2c]/30 bg-[#ff6b2c]/10'
-                            : 'bg-[#141416] hover:bg-[#18181b]',
-                        )}
-                      >
-                        <span
-                          className="h-2 w-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: task.dotColor }}
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[13px] text-[#e4e4e7]">
-                          {task.name}
-                        </span>
-                        <span className="font-mono text-[12px] tabular-nums text-[#71717a]">
-                          {task.time}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => toggleTaskVisibility(task.id)}
-                          aria-label={
-                            task.visible ? 'Hide screenshots' : 'Show screenshots'
-                          }
-                          className="text-[#52525b] hover:text-[#a1a1aa]"
-                        >
-                          {task.visible ? (
-                            <Eye className="h-4 w-4" />
-                          ) : (
-                            <EyeOff className="h-4 w-4" />
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeTask(task.id)}
-                          aria-label="Delete task"
-                          className="text-[#52525b] hover:text-[#ef4444]"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </li>
+                {/* Apps List — COMPACT */}
+                <section className={cn(card, "p-4")}>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-[12px] font-bold text-white">Top Applications</h3>
+                    <MoreVertical className="h-4 w-4 text-[#64748B]" />
+                  </div>
+                  <div className="space-y-4">
+                    {APPS_WEBSITES.slice(0, 3).map((app) => (
+                      <div key={app.name} className="flex items-center gap-3">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#0F172A]">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ 
+                              width: `${(app.minutes / maxAppMinutes) * 100}%`,
+                              backgroundColor: app.color 
+                            }}
+                          />
+                        </div>
+                        <span className="min-w-[50px] text-[11px] font-medium text-[#94A3B8]">{app.name}</span>
+                        <span className="min-w-[40px] text-right font-mono text-[11px] text-white">{app.duration}</span>
+                      </div>
                     ))}
-                  </ul>
-                </div>
+                  </div>
+                </section>
               </div>
             )}
 
             {tab === 'week' && (
-              <div key="week" className="tab-panel-enter space-y-3">
-                <p className="text-[14px] font-medium text-white">This week</p>
-                <ul className="space-y-2">
+              <div className="tab-panel-enter space-y-4">
+                <h3 className="text-[18px] font-semibold text-white">Weekly Activity</h3>
+                <div className="space-y-2">
                   {WEEK_DAYS.map((day) => (
-                    <li
-                      key={day.date}
-                      className={cn(
-                        card,
-                        'flex items-center justify-between px-3.5 py-3',
-                      )}
-                    >
-                      <span className="text-[13px] text-[#e4e4e7]">{day.date}</span>
-                      <span className="font-mono text-[13px] tabular-nums text-[#71717a]">
-                        {day.time}
-                      </span>
-                    </li>
+                    <div key={day.date} className="flex items-center justify-between rounded-2xl bg-[#1E293B]/40 p-4">
+                      <span className="text-[14px] text-white">{day.date}</span>
+                      <span className="font-mono text-[14px] text-[#8B5CF6]">{day.time}</span>
+                    </div>
                   ))}
-                </ul>
-                <div className={cn(card, 'px-3 py-3 text-center')}>
-                  <p className="text-[12px] text-[#71717a]">
-                    Week:{' '}
-                    <span className="font-mono font-semibold text-white">
-                      00h 48m
-                    </span>
-                  </p>
                 </div>
-                <p className="text-center text-[11px] text-[#52525b]">
-                  Time updates each 10 minutes
-                </p>
               </div>
             )}
 
             {tab === 'manual' && (
-              <div key="manual" className="tab-panel-enter space-y-4">
-                <p className="text-[13px] text-[#71717a]">Add manual time entry</p>
-                <div className="space-y-3">
-                  <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-medium text-[#71717a] uppercase">
-                      Date
-                    </span>
-                    <input
-                      type="date"
-                      value={manualDate}
-                      onChange={(e) => setManualDate(e.target.value)}
-                      className="w-full rounded-xl border border-[#27272a] bg-[#141416] px-3 py-2.5 text-[13px] text-white outline-none focus:border-[#ff6b2c]/40"
-                    />
-                  </label>
+              <div className="tab-panel-enter space-y-5">
+                <h3 className="text-[18px] font-semibold text-white">Manual Entry</h3>
+                <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <Stepper label="From" value={manualFrom} onChange={setManualFrom} />
                     <Stepper label="To" value={manualTo} onChange={setManualTo} />
                   </div>
-                  <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-medium text-[#71717a] uppercase">
-                      Project
-                    </span>
-                    <select
-                      value={manualProject}
-                      onChange={(e) => setManualProject(e.target.value)}
-                      className="w-full rounded-xl border border-[#27272a] bg-[#141416] px-3 py-2.5 text-[13px] text-white outline-none"
-                    >
-                      {PROJECTS.map((p) => (
-                        <option key={p}>{p}</option>
-                      ))}
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-[#64748B] uppercase">Project</label>
+                    <select className="w-full rounded-xl bg-[#0F172A] p-3 text-[14px] text-white ring-1 ring-[#1E293B]">
+                      {PROJECTS.map(p => <option key={p}>{p}</option>)}
                     </select>
-                  </label>
-                  <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-medium text-[#71717a] uppercase">
-                      Task
-                    </span>
-                    <select
-                      value={manualTask}
-                      onChange={(e) => setManualTask(e.target.value)}
-                      className="w-full rounded-xl border border-[#27272a] bg-[#141416] px-3 py-2.5 text-[13px] text-white outline-none"
-                    >
-                      {TASKS.map((t) => (
-                        <option key={t}>{t}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    type="button"
-                    className="w-full rounded-xl bg-[#ff6b2c] py-2.5 text-[14px] font-semibold text-white hover:bg-[#ea580c]"
-                  >
-                    Submit
+                  </div>
+                  <button className="w-full rounded-2xl bg-[#8B5CF6] py-3.5 text-[14px] font-bold text-white shadow-xl shadow-[#8B5CF6]/20">
+                    Add Time Entry
                   </button>
                 </div>
               </div>
             )}
 
             {tab === 'settings' && (
-              <div key="settings" className="tab-panel-enter space-y-4">
-                <ul className="space-y-3">
-                  {(
-                    [
-                      ['runOnStart', 'Run when computer starts'],
-                      ['notifySnapshots', 'Notify when snapshots are taken'],
-                      ['keepIdle', 'Keep idle time by default'],
-                      ['lastScreenshot', 'Display Last Screenshot'],
-                      ['playSound', 'Play sound'],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <li
-                      key={key}
-                      className={cn(
-                        card,
-                        'flex items-center justify-between gap-3 px-3 py-2.5',
-                      )}
-                    >
-                      <span className="text-[13px] text-[#e4e4e7]">{label}</span>
-                      <div className="flex items-center gap-2">
-                        {key === 'playSound' && settings.playSound && (
-                          <button
-                            type="button"
-                            className="text-[11px] font-medium text-[#ff6b2c] hover:underline"
-                          >
-                            Test it out!
-                          </button>
-                        )}
-                        <Toggle
-                          label={label}
-                          on={settings[key]}
-                          onChange={(v) => setSetting(key, v)}
-                        />
-                      </div>
-                    </li>
+              <div className="tab-panel-enter space-y-4">
+                <h3 className="text-[18px] font-semibold text-white">Settings</h3>
+                <div className="rounded-2xl bg-[#1E293B]/40 p-1">
+                  {([
+                    ['runOnStart', 'Launch on Startup'],
+                    ['notifySnapshots', 'Snapshot Notifications'],
+                    ['playSound', 'Audible Alerts'],
+                  ] as const).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between p-4">
+                      <span className="text-[14px] text-[#CBD5E1]">{label}</span>
+                      <Toggle label={label} on={settings[key]} onChange={(v) => setSetting(key, v)} />
+                    </div>
                   ))}
-                </ul>
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-medium text-[#71717a] uppercase">
-                    Language
-                  </span>
-                  <select
-                    value={settings.language}
-                    onChange={(e) => setSetting('language', e.target.value)}
-                    className="w-full rounded-xl border border-[#27272a] bg-[#141416] px-3 py-2.5 text-[13px] text-white outline-none"
-                  >
-                    <option>English</option>
-                    <option>Ukrainian</option>
-                    <option>German</option>
-                  </select>
-                </label>
-                <div
-                  className={cn(
-                    card,
-                    'flex items-center justify-between px-3 py-2.5',
-                  )}
-                >
-                  <span className="text-[13px] text-[#e4e4e7]">DownTime</span>
-                  <div className="flex items-center gap-1 rounded-xl border border-[#27272a] bg-[#0c0c0e] p-1">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSetting('downtime', Math.max(1, settings.downtime - 1))
-                      }
-                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#27272a]"
-                    >
-                      −
-                    </button>
-                    <span className="min-w-[28px] text-center font-mono text-[14px] text-white">
-                      {settings.downtime}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSetting('downtime', Math.min(60, settings.downtime + 1))
-                      }
-                      className="flex h-7 w-7 items-center justify-center rounded-lg text-[#71717a] hover:bg-[#27272a]"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    className="flex-1 rounded-xl border border-[#27272a] py-2.5 text-[13px] font-medium text-[#a1a1aa] hover:bg-[#18181b]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="flex-1 rounded-xl bg-[#ff6b2c] py-2.5 text-[13px] font-semibold text-white hover:bg-[#ea580c]"
-                  >
-                    Save
-                  </button>
                 </div>
               </div>
             )}
-          </div>
 
-          {tab === 'tracker' && (
-            <footer className="flex items-center justify-between border-t border-[#1f1f22] px-4 py-2.5">
-              <span className="text-[11px] text-[#52525b]">
-                Last sync: May 22 6:55 PM
-              </span>
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-[#71717a]">
-                <span className="h-2 w-2 rounded-full bg-[#22c55e] shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
-                Online
-              </span>
-            </footer>
-          )}
-        </div>
+          </div>
+        </main>
+
+        {/* Bottom Navigation — NEW LAYOUT */}
+        <nav className="absolute bottom-0 left-0 right-0 z-30 flex items-center justify-around bg-[#0F172A]/80 p-3 pb-6 backdrop-blur-xl border-t border-white/5">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "flex flex-col items-center gap-1 transition-all",
+                tab === t.id ? "text-[#8B5CF6]" : "text-[#64748B] hover:text-[#94A3B8]"
+              )}
+            >
+              <div className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-2xl transition-all",
+                tab === t.id ? "bg-[#8B5CF6]/10 shadow-[inset_0_0_10px_rgba(139,92,246,0.1)]" : ""
+              )}>
+                {t.icon}
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">{t.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Footer info — Tracker tab only */}
+        {tab === 'tracker' && (
+          <div className="absolute bottom-20 left-0 right-0 flex justify-center px-5">
+            <div className="flex items-center gap-1.5 rounded-full bg-[#1E293B]/60 px-3 py-1 text-[10px] text-[#64748B]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+              Synced 2m ago
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

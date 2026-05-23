@@ -4,9 +4,9 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
     system-ui, sans-serif;
   --font-mono: 'SF Mono', ui-monospace, 'Menlo', monospace;
-  --color-accent: #ff6b2c;
-  --color-surface: #111113;
-  --color-card: #18181b;
+  --color-accent: #8b5cf6;
+  --color-surface: #0f172a;
+  --color-card: #1e293b;
 }
 
 html,
